@@ -1,13 +1,30 @@
-import zipSource from './zipSource.ts';
-import magic from './magic.ts';
+import zipSource from "./zipSource.ts";
+import magic from "./magic.ts";
 
-const [filename, doZip] = Deno.args;
+const [filename, bestScore, doZip] = Deno.args;
+if (!filename || bestScore === undefined) {
+  console.error("💥 Missing args");
+  Deno.exit(1);
+}
 
 const file = await Deno.readTextFile(`./in/${filename}`);
 
-const result = magic(file);
+// let the magic happen
+const { result, score } = magic(file);
 
-await Deno.writeTextFile(`./out/${filename}`, result.join('\n'));
+// log stats
+console.log({ bestScore: parseInt(bestScore), score });
+
+// save better versions
+if (score > parseInt(bestScore)) {
+  const magicFile = await Deno.readTextFile("./src/magic.ts");
+  await Deno.writeTextFile(`./backup/${score}_magic.ts`, magicFile);
+}
+
+const lines = result.join("\n");
+// console.log(lines);
+
+await Deno.writeTextFile(`./out/${filename}`, lines);
 
 if (doZip) {
   zipSource();
