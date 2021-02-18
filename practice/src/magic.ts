@@ -1,46 +1,55 @@
-const magic = (file: string): { result: string[]; score: number } => {
-  const [setting, ...rest] = file.split("\n");
+const magic = (
+  pizzas: string[],
+  numberOfPizzas: number,
+  twos: number,
+  threes: number,
+  fours: number
+): Array<number[]> => {
+  const pizzaById = pizzas.reduce<{
+    [key: string]: {
+      totalIngredients: number;
+      uniqueIngredients: number;
+      ingredients: string[];
+    };
+  }>((acc, pizza, idx) => {
+    const [totalIngredients, ...ingredients] = pizza.split(" ").filter(Boolean);
 
-  const [numberOfPizzas, twos, threes, fours] = setting
-    .trim()
-    .split(" ")
-    .map((item) => parseInt(item, 10));
-  // console.log({ numberOfPizzas, twos, threes, fours });
+    acc[idx.toString()] = {
+      uniqueIngredients: new Set(ingredients).size,
+      totalIngredients: parseInt(totalIngredients),
+      ingredients,
+    };
 
-  const pizzas = rest.filter(Boolean);
-  // console.log({ pizzas });
+    return acc;
+  }, {});
 
-  if (numberOfPizzas !== pizzas.length) {
-    console.error("💥 Pizza fehlt/zu viel");
-    Deno.exit(1);
+  let result: Array<number[]> = [];
+
+  while (numberOfPizzas > 1) {
+    if (numberOfPizzas > 4) {
+      fours--;
+      numberOfPizzas -= 4;
+
+      const delivery = [4];
+      for (let index = 0; index < 4; index++) {
+        const bestPizza = Object.entries(pizzaById).sort(
+          (pizzaA, pizzaB) =>
+            pizzaB[1].uniqueIngredients - pizzaA[1].uniqueIngredients
+        )[0];
+
+        delete pizzaById[bestPizza[0]];
+
+        delivery.push(parseInt(bestPizza[0]));
+      }
+
+      result.push(delivery);
+    }
   }
 
-  // build result
-  const result = [[2], [2, 1, 4], [3, 0, 2, 3]];
-  // magic...
+  // add number of deliveries
+  result.unshift([result.length]);
 
-  // calc score
-  let score = 0;
-  result.slice(1).forEach(([_teamSize, ...pizzaIds]) => {
-    const uniqueIngredients = new Set();
-
-    pizzaIds.forEach((pizzaId) => {
-      pizzas[pizzaId]
-        .slice(1)
-        .split(" ")
-        .filter(Boolean)
-        .forEach((ingredient) => {
-          uniqueIngredients.add(ingredient);
-        });
-    });
-
-    const deliveryScore = Math.pow(uniqueIngredients.size, 2);
-    // console.log({ deliveryScore });
-
-    score += deliveryScore;
-  });
-
-  return { result: result.map((row) => row.join(" ")), score };
+  return result;
 };
 
 export default magic;

@@ -1,5 +1,6 @@
 import zipSource from "./zipSource.ts";
-import magic from "./magic.ts";
+
+import skeletton from "./skeletton.ts";
 
 const [filename, bestScore, doZip] = Deno.args;
 if (!filename || bestScore === undefined) {
@@ -10,7 +11,7 @@ if (!filename || bestScore === undefined) {
 const file = await Deno.readTextFile(`./in/${filename}`);
 
 // let the magic happen
-const { result, score } = magic(file);
+const { result, score } = skeletton(file);
 
 // log stats
 console.log({ bestScore: parseInt(bestScore), score });
