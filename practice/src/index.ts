@@ -18,7 +18,7 @@ console.log({ bestScore: parseInt(bestScore), score });
 // save better versions
 if (score > parseInt(bestScore)) {
   const magicFile = await Deno.readTextFile("./src/magic.ts");
-  await Deno.writeTextFile(`./backup/${score}_magic.ts`, magicFile);
+  await Deno.writeTextFile(`./backup/${score}_${filename}_magic.ts`, magicFile);
 }
 
 const lines = result.join("\n");
