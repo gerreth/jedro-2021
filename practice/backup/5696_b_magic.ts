@@ -79,8 +79,6 @@ const magic = (
 
       continue;
     }
-
-    break;
   }
 
   // add number of deliveries
