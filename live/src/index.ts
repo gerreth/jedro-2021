@@ -8,7 +8,7 @@ if (!filename || bestScore === undefined) {
   Deno.exit(1);
 }
 
-const file = await Deno.readTextFile(`./in/${filename}`);
+const file = await Deno.readTextFile(`./in/${filename}.txt`);
 
 // let the magic happen
 const { result, score } = skeletton(file);

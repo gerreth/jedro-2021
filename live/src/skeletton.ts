@@ -3,61 +3,85 @@ import magic from "./magic.ts";
 const skeletton = (file: string): { result: string[]; score: number } => {
   const [setting, ...rest] = file.split("\n");
 
-  let [numberOfPizzas, twos, threes, fours] = setting
+  let [
+    simulationDuration,
+    numOfIntersections,
+    numOfStreets,
+    numOfCars,
+    bonusPerCar,
+  ] = setting
     .trim()
     .split(" ")
     .map((item) => parseInt(item, 10));
-  // console.log({ numberOfPizzas, twos, threes, fours });
+  // console.log({
+  //   simulationDuration,
+  //   numOfIntersections,
+  //   numOfStreets,
+  //   numOfCars,
+  //   bonusPerCar,
+  // });
 
-  const pizzas = rest.filter(Boolean);
-  // console.log({ pizzas });
+  const streets = rest.filter(Boolean).splice(0, numOfStreets);
+  // console.log({ streets });
 
-  if (numberOfPizzas !== pizzas.length) {
-    console.error("💥 Pizza fehlt/zu viel");
+  if (numOfStreets !== streets.length) {
+    console.error("💥 Straße fehlt/zu viel");
     Deno.exit(1);
   }
 
-  // build result
-  const result = magic(pizzas, numberOfPizzas, twos, threes, fours);
+  const streetsByName: {
+    [key: string]: {
+      intersectionStart: number;
+      intersectionEnd: number;
+      travelDuration: number;
+    };
+  } = {};
+  streets.forEach((street) => {
+    const [
+      intersectionStart,
+      intersectionEnd,
+      name,
+      travelDuration,
+    ] = street.split(" ").filter(Boolean);
 
-  // fail falsy result
-  if (result[0].length !== 1 || result[0][0] !== result.length - 1) {
-    console.error("💥 Zahl der gesamten Lieferungen falsch");
+    streetsByName[name] = {
+      intersectionStart: parseInt(intersectionStart),
+      intersectionEnd: parseInt(intersectionEnd),
+      travelDuration: parseInt(travelDuration),
+    };
+  });
+
+  const carPaths = rest.filter(Boolean).splice(numOfStreets, numOfCars);
+  // console.log({ carPaths });
+
+  if (numOfCars !== carPaths.length) {
+    console.error("💥 CarPath fehlt/zu viel");
     Deno.exit(1);
   }
 
-  result.slice(1).forEach((delivery) => {
-    if (
-      ![2, 3, 4].includes(delivery[0]) ||
-      delivery[0] !== delivery.length - 1
-    ) {
-      console.error("💥 Teamgröße oder Anzahl Pizzen falsch");
+  const carRoutes: Array<{ routeLength: number; route: Array<string> }> = [];
+  carPaths.forEach((path) => {
+    const [routeLength, ...route] = path.split(" ").filter(Boolean);
+    carRoutes.push({ routeLength: parseInt(routeLength), route });
+  });
+  // console.log(carRoutes);
+
+  carRoutes.forEach((route) => {
+    if (route.routeLength !== route.route.length) {
+      console.error("💥 CarPath fehlt/zu viel");
       Deno.exit(1);
     }
   });
 
+  // build result
+  const result = magic();
+
+  // fail falsy result
+
   // calc score
   let score = 0;
-  result.slice(1).forEach(([_teamSize, ...pizzaIds]) => {
-    const uniqueIngredients = new Set();
 
-    pizzaIds.forEach((pizzaId) => {
-      pizzas[pizzaId]
-        .slice(1)
-        .split(" ")
-        .filter(Boolean)
-        .forEach((ingredient) => {
-          uniqueIngredients.add(ingredient);
-        });
-    });
-
-    const deliveryScore = Math.pow(uniqueIngredients.size, 2);
-    // console.log({ deliveryScore });
-
-    score += deliveryScore;
-  });
-
-  return { result: result.map((row) => row.join(" ")), score };
+  return { result, score };
 };
 
 export default skeletton;
